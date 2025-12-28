@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true              # Automatically finds services in Eureka
+          lower-case-service-id: true # <--- THIS IS THE KEY (prevents case errors)
+      routes:
+        - id: inventory-route
+          uri: lb://INVENTORY-SERVICE  # Use ALL CAPS to match your Eureka
+          predicates:
+            - Path=/inventory/**
+          filters:
+            - StripPrefix=1           # Changes /inventory/hello -> /hello
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.http.server.reactive: DEBUG
+    org.springframework.web.reactive: DEBUG
+
