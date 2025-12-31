@@ -8,24 +8,20 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true              # Automatically finds services in Eureka
-          lower-case-service-id: true # <--- THIS IS THE KEY (prevents case errors)
+          enabled: false
       routes:
+        # 1. Existing Inventory Route
         - id: inventory-route
-          uri: lb://INVENTORY-SERVICE  # Use ALL CAPS to match your Eureka
+          uri: lb://inventory-service
           predicates:
             - Path=/inventory/**
           filters:
-            - StripPrefix=1           # Changes /inventory/hello -> /hello
+            - StripPrefix=1
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.http.server.reactive: DEBUG
-    org.springframework.web.reactive: DEBUG
-
+        # 2. ADD THIS NEW ROUTE FOR ORDERS
+        - id: order-route
+          uri: lb://order-service
+          predicates:
+            - Path=/orders/**
+          # We DO NOT use StripPrefix=1 here because your controller
+          # already expects the "/orders" prefix.
